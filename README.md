@@ -2,8 +2,7 @@
 
 Simple and easy C interface to gnuplot. Allows for video creation.
 
-
-## Modes
+### Modes
 Currently, gnuplotC supports the following modes:
 
 
@@ -17,8 +16,8 @@ Each mode selects the appropriate gnuplot terminal.
 
 
 
----
 ## Making a plot
+---
 To make a plot, simply follow the pipeline:
 
 1. **Start gnuplot interface.** Select mode, file name, figure size, ...
