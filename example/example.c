@@ -1,5 +1,6 @@
 
 #include "plot.h"
+#include <omp.h>
 #include <stdlib.h>
 
 
@@ -156,21 +157,27 @@ int main() {
 
     /* ----------------------- */
     /* -------- VIDEO -------- */
+
+    activate_parallel_video_processing(8);
+
+    char *video_config[] = {"set title 'video'", "set pm3d depthorder", "unset colorbox", 
+                            "unset border", "unset tics", "set isosamples 100", "set view equal xyz", NULL};
     framerate = 24;;
-    ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, framerate,
-                        "set title 'video'", "set pm3d depthorder", "unset colorbox", 
-                        "set isosamples 100", "set view equal xyz", "unset border", "unset tics");
+    ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, framerate, GNUPLOT_ARRAY(video_config));
     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
     draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
     for (int ii=0; ii<72; ii++) {
         char buff[256]; 
         snprintf(buff, 256, "set view 70, %f", ii*360.0/72.0);
-        next_frame(ifc, buff);
 
+        next_frame(ifc, GNUPLOT_ARRAY(video_config), buff);
         draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
         draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
     }
     gnuplot_fini(ifc);
-    printf("Processing video...");
+
+
+
+    
 
 }

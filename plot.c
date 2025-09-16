@@ -1,11 +1,15 @@
-// TODO: Show when video is being processed to know program has not halted...
+// TODO: Make and remove temporal directories for video processing
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <omp.h>
 #include "plot.h"
+
+
+int VIDEO_PARALLEL_PROCESSES = 0;  // Controls omp threads for plotting video frames
 
 
 FILE *popen_gnuplot(void)
@@ -79,59 +83,107 @@ void gnuplot_config_impl(t_gnuplot *interface, ...)
 }
 
 
+void pipe_default_commands(t_gnuplot *interface)
+{
+    pipe_command(interface, "set parametric");
+}
+
+
+void activate_parallel_video_processing(int num_threads)
+{
+    if (num_threads <= 0) {
+        puts("Error: num_threads must be > 0");
+        exit(1);
+    }
+    VIDEO_PARALLEL_PROCESSES = num_threads;
+
+    mkdir(TEMPLATES_TMP_DIR, 0755);
+    mkdir(FRAMES_TMP_DIR, 0755);
+}
+
+
+void setup_video_output(t_gnuplot *interface)
+{
+    if (VIDEO_PARALLEL_PROCESSES == 0) {
+        // We pipe each frame from gnuplot directly into ffmpeg as a png
+        interface->pipe = popen_gnuplot();
+
+        char buff[256];
+        snprintf(buff, 256, "| ffmpeg -y -loglevel error -f png_pipe -r %d -s:v %dx%d -i pipe: -pix_fmt yuv420p -c:v libx264 -crf 18 %s", interface->framerate, interface->size[0], interface->size[1], interface->file_name);
+        pipe_terminal_output(interface, "pngcairo", buff);
+
+    } else if (VIDEO_PARALLEL_PROCESSES > 0) {
+        // We write each frame into a gnuplot script file
+        // In the end these templates will be executed in parallel to produce each frame as a png
+        // ffmpeg will then make a video from them
+        char buff[256];
+        snprintf(buff, 256, "%s/frame_%04d.plt", TEMPLATES_TMP_DIR, interface->frame);
+        interface->pipe = fopen(buff, "w");
+
+        snprintf(buff, 256, "%s/frame_%04d.png", FRAMES_TMP_DIR, interface->frame);
+        pipe_terminal_output(interface, "pngcairo", buff);
+    } else {
+        puts("Error: VIDEO_PARALLEL_PROCESSES < 0");
+        exit(1);
+    }
+}
+
+
 t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, int framerate, ...) 
 {
     t_gnuplot *interface = malloc(sizeof(t_gnuplot));
-    interface->pipe = popen_gnuplot();
+    interface->pipe = NULL;  // safeguard 
     interface->type = type;
     interface->dim = -1;  // safeguard 
     interface->file_name = strdup(file_name);
-    interface->font_size = font_size;
     interface->size[0] = size[0];
     interface->size[1] = size[1];
+    interface->font_size = font_size;
+    interface->framerate = framerate;
     interface->state = 0;
-    interface->N_OMP = 4; //TODO THIS??
+    interface->N_OMP = VIDEO_PARALLEL_PROCESSES;
     interface->frame = 1;
 
     switch (type) {
         case PNG_2D: {
             interface->dim = 2;
+            interface->pipe = popen_gnuplot();
             pipe_terminal_output(interface, "pngcairo", file_name);
             break;
         }
         case PDF_2D: {
             interface->dim = 2;
+            interface->pipe = popen_gnuplot();
             pipe_terminal_output(interface, "pdfcairo", file_name);
             break;
         }
         case EPS_2D: {
             interface->dim = 2;
+            interface->pipe = popen_gnuplot();
             puts("TODO EPS");
             exit(1);
             break;
         }
        case PNG_3D: {
             interface->dim = 3;
+            interface->pipe = popen_gnuplot();
             pipe_terminal_output(interface, "pngcairo", file_name);
             break;
         }
         case PDF_3D: {
             interface->dim = 3;
+            interface->pipe = popen_gnuplot();
             pipe_terminal_output(interface, "pdfcairo", file_name);
             break;
         }
         case VIDEO_2D: {
             interface->dim = 2;
-            char buff[256];
-            snprintf(buff, 256, "| ffmpeg -y -loglevel error -f png_pipe -r %d -s:v %dx%d -i pipe: -pix_fmt yuv420p -c:v libx264 -crf 18 %s", framerate, interface->size[0], interface->size[1], file_name);
-            pipe_terminal_output(interface, "pngcairo", buff);
+            setup_video_output(interface);
             break;
         }
         case VIDEO_3D: {
             interface->dim = 3;
-            char buff[256];
-            snprintf(buff, 256, "| ffmpeg -y -loglevel error -f png_pipe -r %d -s:v %dx%d -i pipe: -pix_fmt yuv420p -c:v libx264 -crf 18 %s", framerate, interface->size[0], interface->size[1], file_name);
-            pipe_terminal_output(interface, "pngcairo", buff);
+            setup_video_output(interface);
             break;
         }
         default: {
@@ -141,36 +193,79 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
         }
     }
     
+    // Config:
+    pipe_default_commands(interface);
+
     va_list ap;
     va_start(ap, framerate);
     pipe_config_vargs(interface, ap);
     va_end(ap);
 
-    // Commands for correct default working of some 3d elements
-    pipe_command(interface, "set parametric");
-
     return interface;
+}
+
+
+void next_frame_impl(t_gnuplot *interface, ...)
+{
+    interface->state = 0;
+    interface->frame++;
+    fputs("\n", interface->pipe);
+    fflush(interface->pipe);
+
+    if (VIDEO_PARALLEL_PROCESSES > 0) {
+        // Open new file to write template of frame to:
+        fclose(interface->pipe);
+        char buff[256];
+        snprintf(buff, 256, "%s/frame_%04d.plt", TEMPLATES_TMP_DIR, interface->frame);
+        interface->pipe = fopen(buff, "w");
+
+        // Setup config
+        snprintf(buff, 256, "%s/frame_%04d.png", FRAMES_TMP_DIR, interface->frame);
+        pipe_terminal_output(interface, "pngcairo", buff);
+        pipe_default_commands(interface);
+    }
+    
+    va_list ap;
+    va_start(ap, interface);
+    pipe_config_vargs(interface, ap);
+    va_end(ap);
+}
+
+
+void process_video_parallel(t_gnuplot *interface)
+{
+    omp_set_num_threads(8);
+    #pragma omp parallel for schedule(dynamic)
+    for (int ii=1; ii<73; ii++) {
+        char scriptfile[256];
+        snprintf(scriptfile, sizeof(scriptfile), "%s/frame_%04d.plt", TEMPLATES_TMP_DIR, ii);
+
+        char cmd[512];
+        snprintf(cmd, sizeof(cmd), "gnuplot %s", scriptfile);
+        FILE *gnuplot_instance = popen(cmd, "r");
+        pclose(gnuplot_instance);
+    }
+
+    char buff[1024];
+    snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i GNUPLOT_FRAMES_TMP/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", interface->framerate, interface->size[0], interface->size[1], interface->file_name);
+    system(buff);
 }
 
 
 void gnuplot_fini(t_gnuplot *interface)
 {   
     fputs("\n", interface->pipe);
-    pclose(interface->pipe);
+
+    if (VIDEO_PARALLEL_PROCESSES == 0) {
+        pclose(interface->pipe);
+    } else if (VIDEO_PARALLEL_PROCESSES > 0) {
+        fclose(interface->pipe);
+        process_video_parallel(interface);
+    } else {
+        puts("Error: VIDEO_PARALLEL_PROCESSES < 0.");
+    }
+
     free(interface->file_name);
-}
-
-
-void next_frame_impl(t_gnuplot *interface, ...)
-{
-    fputs("\n", interface->pipe);
-    fflush(interface->pipe);
-    interface->state = 0;
-
-    va_list ap;
-    va_start(ap, interface);
-    pipe_config_vargs(interface, ap);
-    va_end(ap);
 }
 
 
