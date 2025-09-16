@@ -1,6 +1,6 @@
 # gnuplotC
 
-Simple and easy C interface to plot using gnuplot. Allows for video creation.
+Simple and easy C interface to gnuplot. Allows for video creation.
 
 
 ## Modes
