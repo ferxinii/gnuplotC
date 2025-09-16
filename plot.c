@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <string.h>
+#include <omp.h>
 #include "plot.h"
 
 
@@ -89,6 +90,8 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
     interface->size[0] = size[0];
     interface->size[1] = size[1];
     interface->state = 0;
+    interface->N_OMP = 4; //TODO THIS??
+    interface->frame = 1;
 
     switch (type) {
         case PNG_2D: {
@@ -168,8 +171,6 @@ void next_frame_impl(t_gnuplot *interface, ...)
     va_start(ap, interface);
     pipe_config_vargs(interface, ap);
     va_end(ap);
-
-    
 }
 
 
