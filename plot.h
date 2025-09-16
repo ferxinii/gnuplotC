@@ -23,6 +23,8 @@ typedef struct t_gnuplot {
     int font_size;
     int size[2];
     int state;
+    int N_OMP;
+    int frame;
 } t_gnuplot;
 
 
