@@ -2,6 +2,7 @@
 #include "plot.h"
 #include <omp.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 double parabola(double x) { return x*x; }
@@ -18,7 +19,7 @@ int main() {
     t_gnuplot *ifc = gnuplot_start(PNG_2D, "1.png", figsize, fontsize, framerate);
     draw_segment_2d(ifc, 0, 0, 1, 1, NULL); 
     draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
     
     // GNUPLOT_start with configurations:
@@ -28,7 +29,7 @@ int main() {
                         "set xrange [0:1]", 
                         "set yrange [0:1]");
     draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2 title 'legend'"); 
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
     
     // GNUPLOT_ARRAY (array of commands):
@@ -45,14 +46,14 @@ int main() {
                         GNUPLOT_ARRAY(cmd_array), 
                         "set xtics 0,0.1,1");
     draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2 title 'legend'"); 
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // GNUPLOT_CONFIG:
     ifc = gnuplot_start(PNG_2D, "4.png", figsize, fontsize, framerate);
     gnuplot_config(ifc, "set title 'Configuring'", GNUPLOT_ARRAY(cmd_array));
     draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2 title 'legend'"); 
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     
@@ -64,7 +65,7 @@ int main() {
                         "set title 'draw\\_point'", GNUPLOT_ARRAY(cmd_array));
     draw_point_2d(ifc, 0.5, 0.3, "ps 3 pt 15");
     draw_point_2d(ifc, 0.2, 0.8, "ps 6 pt 9");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // DRAW_2D:
@@ -74,7 +75,7 @@ int main() {
     ifc = gnuplot_start(PNG_2D, "6.png", figsize, fontsize, framerate,
                         "set title 'draw\\_2d'", GNUPLOT_ARRAY(cmd_array));
     draw_2d(ifc, x, y, 4, "w linespoints lw 2 ps 2 pt 7 title 'w linespoints'");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
     
     
     // DRAW_ARRAY_2D:
@@ -90,14 +91,14 @@ int main() {
     ifc = gnuplot_start(PNG_2D, "7.png", figsize, fontsize, framerate,
                         "set title 'draw\\_array\\_2d'", GNUPLOT_ARRAY(cmd_array));
     draw_array_2d(ifc, coords, 3, "w lines dt '_ ' lw 4 title 'w lines'");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // DRAW_ARROWS_FROM_ARRAY_2D
     ifc = gnuplot_start(PNG_2D, "8.png", figsize, fontsize, framerate,
                         "set title 'draw\\_arrows\\_from\\_array\\_2d'", GNUPLOT_ARRAY(cmd_array));
     draw_arrows_from_array_2d(ifc, coords, 3, 1, 0, "lw 3 size 0.05,20 fixed");  // Recall size command for head size (and fixed keyword), ex: size 0.2,20 fixed
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
     
     
     // DRAW_ERRORBARS_2D:
@@ -107,14 +108,14 @@ int main() {
     ifc = gnuplot_start(PNG_2D, "9.png", figsize, fontsize, framerate,
                         "set title 'draw\\_errorbars'", GNUPLOT_ARRAY(cmd_array));
     draw_errorbars_2d(ifc, x, y, errors, 4, "lw 3 lc 6 pt 5 ps 2");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // DRAW_FUNCTION_2D
     ifc = gnuplot_start(PNG_2D, "10.png", figsize, fontsize, framerate,
                         "set title 'draw\\_function\\_2d'", GNUPLOT_ARRAY(cmd_array));
     draw_function_2d(ifc, 0, 1, 100, parabola, "w lines lw 2");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     
@@ -127,7 +128,7 @@ int main() {
                         "set pm3d depthorder");
     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", "title 'lines'");
     draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", "title 'pm3d'");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // UNSET COLORBOX, SET ISOSAMPLES
@@ -136,7 +137,7 @@ int main() {
                         "set pm3d depthorder", "unset colorbox", "set isosamples 100");
     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", "title 'lines'");
     draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", "title 'pm3d'");
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     // DRAW_SOLID_TRIANGLE_3D
@@ -148,7 +149,7 @@ int main() {
                         "set title 'draw\\_triangle\\_3d'", GNUPLOT_ARRAY(cmd_array),
                         "set pm3d depthorder");
     draw_solid_triangle_3d(ifc, v0, v1, v2, NULL);
-    gnuplot_fini(ifc);
+    gnuplot_end(ifc);
 
 
     
@@ -158,11 +159,9 @@ int main() {
     /* ----------------------- */
     /* -------- VIDEO -------- */
 
-    activate_parallel_video_processing(8);
-
     char *video_config[] = {"set title 'video'", "set pm3d depthorder", "unset colorbox", 
                             "unset border", "unset tics", "set isosamples 100", "set view equal xyz", NULL};
-    framerate = 24;;
+    framerate = 24;
     ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, framerate, GNUPLOT_ARRAY(video_config));
     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
     draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
@@ -174,10 +173,28 @@ int main() {
         draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
         draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
     }
-    gnuplot_fini(ifc);
-
-
+    gnuplot_end(ifc);
 
     
+    // PARALLEL PROCESSING:
+    ifc = gnuplot_start(VIDEO_3D, "15.mp4", figsize, fontsize, framerate, GNUPLOT_ARRAY(video_config), 
+                        "set title 'parallel processed'");
+    activate_parallel_video_processing(ifc, 8);
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    for (int ii=0; ii<72; ii++) {
+        char buff[256]; 
+        snprintf(buff, 256, "set view 70, %f", ii*360.0/72.0);
+
+        next_frame(ifc, GNUPLOT_ARRAY(video_config), buff, "set title 'parallel processed'");
+        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    }
+    gnuplot_end(ifc);
+
+
+    // VIDEO_TO_GIF
+    video_to_gif("15.mp4", "16.gif", figsize, framerate);
+
 
 }
