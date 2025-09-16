@@ -1,9 +1,9 @@
 # gnuplotC
 
-Simple and easy C interface to gnuplot. Allows for video creation.
+Simple and easy C interface to *gnuplot*. Allows for video creation.
 
 ### Modes
-Currently, gnuplotC supports the following modes:
+Currently, **gnuplotC** supports the following modes:
 
 
 |    | **png** | **pdf** | **eps** | **video (mp4)** |
@@ -12,14 +12,14 @@ Currently, gnuplotC supports the following modes:
 | **3D** | PNG_3D | PDF_3D |  | VIDEO_3D |
 
 
-Each mode selects the appropriate gnuplot terminal. 
+Each mode selects the appropriate *gnuplot* terminal. 
 
 
 
 ---
 ### Creating a plot
 
-1. **Start gnuplot interface.** Select mode, file name, figure size, ...
+1. **Start *gnuplot* interface.** Select mode, file name, figure size, ...
 2. *(Optional)* **Configure the interface.** Before adding elements!
 3. **Add elements.**
 4. **End.**
@@ -27,9 +27,9 @@ Each mode selects the appropriate gnuplot terminal.
 
 ---
 ### Creating a video
-Videos are built using *ffmpeg*, which must be installed and available. Treat each frame as its own independent figure.
+Videos are built using *ffmpeg*, which must be installed and available. Treat each frame as its own independent figure. By default, each frame is piped directly to *ffmpeg* without the need to store it.
 
-1. **Start gnuplot interface.** Select framerate, ...
+1. **Start *gnuplot* interface.** Select framerate, ...
 2. *(Optional)* **Configure the interface.** Before adding elements!
 3. **Add elements.**
 4. **Start a new frame.**
@@ -38,7 +38,7 @@ Videos are built using *ffmpeg*, which must be installed and available. Treat ea
 
 
 ### Faster parallel video processing
-Parallel processing of the frames is possible, with each thread running gnuplot in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space. Internally, this is implemented with *OMP*.
+Parallel processing of the frames is possible, with each thread running *gnuplot* in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space. Internally, this is implemented with *OMP*.
 
 To activate this mode, simply call *activate_parallel_video_processing(...)* before adding any element and frame.
 
