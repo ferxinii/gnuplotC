@@ -12,8 +12,6 @@ Currently, **gnuplotC** supports the following modes:
 | **3D** | PNG_3D | PDF_3D |  | VIDEO_3D |
 
 
-Each mode selects the appropriate *gnuplot* terminal. 
-
 
 
 ---
@@ -23,6 +21,15 @@ Each mode selects the appropriate *gnuplot* terminal.
 2. *(Optional)* **Configure the interface.** Before adding elements!
 3. **Add elements.**
 4. **End.**
+
+```{C}
+void example() {
+    t_gnuplot *ifc = gnuplot_start(PNG_2D, "segment.png", figsize, fontsize, framerate);
+    draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
+    gnuplot_end(ifc);
+}
+```
+
 
 
 ---
