@@ -1,3 +1,3 @@
 
 make:
-	gcc -I../ example.c ../plot.c -o example
+	gcc-15 -I../ example.c ../plot.c -o example -fopenmp

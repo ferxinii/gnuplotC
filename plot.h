@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#define TEMPLATES_TMP_DIR "GNUPLOT_TEMPLATES_TMP"
+#define FRAMES_TMP_DIR "GNUPLOT_FRAMES_TMP"
 
 enum gnuplot_type {
     PNG_2D,
@@ -21,6 +23,7 @@ typedef struct t_gnuplot {
     int dim;
     char *file_name;
     int font_size;
+    int framerate;
     int size[2];
     int state;
     int N_OMP;
@@ -28,11 +31,16 @@ typedef struct t_gnuplot {
 } t_gnuplot;
 
 
+// BASIC
 t_gnuplot *gnuplot_start(enum gnuplot_type type, char *file_name, int size[2], int font_size, int framerate, ...);
 
 void gnuplot_config(t_gnuplot *interface, ...);
 
 void gnuplot_fini(t_gnuplot *interface);
+
+
+// VIDEO
+void activate_parallel_video_processing(int num_threads);
 
 void next_frame(t_gnuplot *interface, ...); 
 
