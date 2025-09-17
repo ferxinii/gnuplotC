@@ -21,7 +21,7 @@ Currently, **gnuplotC** supports the following modes:
 3. **Add elements.**
 4. **End.**
 
-```{C}
+```C
 int fontsize = 18, figsize[2] = {1080, 1080};
 
 t_gnuplot *ifc = gnuplot_start(PNG_2D, "segment.png", figsize, fontsize);
@@ -44,7 +44,7 @@ Videos are built using *ffmpeg*, which must be installed and available. Treat ea
 
 Optionally, the default framerate (24 fps) can be changed by modifying the global variable *GNUPLOTC_FRAMERATE* **before** starting the interface.
 
-```{C}
+```C
 GNUPLOTC_FRAMERATE = 12;
 
 char *video_config[] = {"unset border", "unset tics", "set isosamples 100", 
@@ -81,7 +81,7 @@ The gnuplot configuration can be specified:
 
 Once an element in a plot (or frame) is drawn, it is not possible to change the gnuplot configuration.
 
-```{C}
+```C
 t_gnuplot *ifc = gnuplot_start(PNG_2D, "circle.png", figsize, fontsize, "set title 'CIRCLE'", "set xlabel 'x'");
 gnuplot_config(ifc, "set xrange [0:1]", "set yrange [0:1]");
 [...]
@@ -89,7 +89,7 @@ gnuplot_config(ifc, "set xrange [0:1]", "set yrange [0:1]");
 
 
 Also, we may define a **NULL terminated** array of configurations, which we can pass at any point as an additional configuration using *GNUPLOTC_ARRAY()*:
-```{C}
+```C
 char *cmd_array[] = {"set xrange [0:1]", "set yrange [0:1]", NULL};
 t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_ARRAY(cmd_array));
 [...]
@@ -105,7 +105,7 @@ The user must have available *gnuplot* and *ffmpeg* (for video creation) as comm
 #### Optional OMP mode
 By default, parallel processing of frames is implemented using *fork()* to spawn child processes. However, those users who prefer an *OMP* approach, may activate it one of two ways:
 - Defining *GNUPLOTC_USE_OMP* before including *gnuplotc.h*
-    ```{C}
+    ```C
     #define GNUPLOTC_USE_OMP
     #include "gnuplotc.h"
     ```
