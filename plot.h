@@ -3,8 +3,11 @@
 
 #include <stdio.h>
 
-#define TEMPLATES_TMP_DIR "GNUPLOT_TEMPLATES_TMP"
-#define FRAMES_TMP_DIR "GNUPLOT_FRAMES_TMP"
+#define TEMPLATES_DIR "GNUPLOTC_TEMPLATES_TMP"
+#define FRAMES_DIR "GNUPLOTC_FRAMES_TMP"
+
+
+typedef struct t_gnuplot t_gnuplot;
 
 enum gnuplot_type {
     PNG_2D,
@@ -16,27 +19,14 @@ enum gnuplot_type {
     VIDEO_3D
 };
 
-
-typedef struct t_gnuplot {
-    FILE *pipe;
-    enum gnuplot_type type;
-    int dim;
-    char *file_name;
-    int font_size;
-    int framerate;
-    int size[2];
-    int state;
-    int N_OMP;
-    int frame;
-} t_gnuplot;
-
+extern int GNUPLOTC_FRAMERATE;
 
 // BASIC
-t_gnuplot *gnuplot_start(enum gnuplot_type type, char *file_name, int size[2], int font_size, int framerate, ...);
+t_gnuplot *gnuplot_start(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...);
 
 void gnuplot_config(t_gnuplot *interface, ...);
 
-void gnuplot_fini(t_gnuplot *interface);
+void gnuplot_end(t_gnuplot *interface);
 
 
 // VIDEO
@@ -44,7 +34,7 @@ void activate_parallel_video_processing(int num_threads);
 
 void next_frame(t_gnuplot *interface, ...); 
 
-void video_to_gif(const char *name_video, const char *name_gif);  // TODO??
+void video_to_gif(const char *file_video, const char *file_gif, int size[2], int framerate);
 
 
 // GENERIC ELEMENTS
@@ -86,15 +76,15 @@ void draw_solid_triangle_3d(t_gnuplot *interface, double v0[3], double v1[3], do
     PRIVATE DECLARATIONS (IGNORE)
   --------------------------------- */
 
-#define GNUPLOT_ARRAY_MARKER  ((char*) -1)
+#define GNUPLOTC_ARRAY_MARKER  ((char*) -1)
 
-#define GNUPLOT_ARRAY(arr) \
-        GNUPLOT_ARRAY_MARKER, arr
+#define GNUPLOTC_ARRAY(arr) \
+        GNUPLOTC_ARRAY_MARKER, arr
 
 #define gnuplot_start(obj, ...) \
         gnuplot_start_impl(obj, __VA_OPT__(__VA_ARGS__,) NULL)
 
-t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, int framerate, ...);
+t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...);
 
 #define gnuplot_config(obj, ...) \
         gnuplot_config_impl(obj, __VA_OPT__(__VA_ARGS__,) NULL)
