@@ -104,12 +104,12 @@ The user must have available *gnuplot* and *ffmpeg* (for video creation) as comm
 
 #### Optional OMP mode
 By default, parallel processing of frames is implemented using *fork()* to spawn child processes. However, those users who prefer an *OMP* approach, may activate it one of two ways:
-- Defining *GNUPLOTC_USE_OMP* before including *gnuplotc.h*
+- Defining *GNUPLOTC_USE_OMP* before including *gnuplotc.h*.
     ```C
     #define GNUPLOTC_USE_OMP
     #include "gnuplotc.h"
     ```
-- or by passing *-DGNUPLOTC_USE_OMP* as an argument to the compiler
+- Or by passing *-DGNUPLOTC_USE_OMP* as an argument to the compiler.
     ```
     gcc-15 -DGNUPLOTC_USE_OMP example.c plot.c -o example_omp
     ```
