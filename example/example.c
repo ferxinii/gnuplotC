@@ -1,6 +1,6 @@
 
 #include "plot.h"
-#include <omp.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 

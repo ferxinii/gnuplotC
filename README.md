@@ -71,7 +71,7 @@ To activate this mode, simply call *activate_parallel_video_processing(...)* **b
 
 
 ---
-## Configuring the interface
+### Configuring the interface
 
 The gnuplot configuration can be specified:
 - When calling *gnuplot_start(...)*, in the form of additional optional parameters.
@@ -94,5 +94,16 @@ t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_A
 [...]
 ```
 
+
+--- 
+### Dependencies and compilation
+
+The user must have available *gnuplot* and *ffmpeg* (for video creation) as command line tools.
+
+Furthermore, the code uses *OMP* when the mode for parallel video processing is activated. Because of this, the compiler must support *OMP*. 
+In my case, the native clang and gcc on my MacBook do not natively support this. I have to use a *Homebrew* installed version of gcc, *gcc-15* with the flag *-fopenmp* in order to compile correctly.
+
+
+If the user does not want to use this parallel mode, they may simply define the variable *GNUPLOTC_NO_OMP*?
 
 
