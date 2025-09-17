@@ -1,3 +1,4 @@
 
 make:
-	gcc-15 -I../ example.c ../plot.c -o example -fopenmp
+	gcc -I../ example.c ../plot.c -o example	
+	gcc-15 -DGNUPLOTC_USE_OMP -I../ example.c ../plot.c -o example_omp -fopenmp

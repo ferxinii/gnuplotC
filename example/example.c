@@ -160,18 +160,18 @@ int main() {
 
     char *video_config[] = {"set title 'video'", "set pm3d depthorder", "unset colorbox", "set view 70, 0",
                             "unset border", "unset tics", "set isosamples 100", "set view equal xyz", NULL};
-    ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
-    for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
-        char buff[256]; 
-        snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
-
-        next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
-        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
-    }
-    gnuplot_end(ifc);
+    // ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
+    // draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+    // draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    // for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
+    //     char buff[256]; 
+    //     snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
+    //
+    //     next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
+    //     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+    //     draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    // }
+    // gnuplot_end(ifc);
 
 
     // PARALLEL VIDEO PROCESSING
@@ -193,7 +193,7 @@ int main() {
 
     
     // VIDEO_TO_GIF
-    video_to_gif("14.mp4", "16.gif", figsize, 24);
+    // video_to_gif("14.mp4", "16.gif", figsize, 24);
 
     
 
