@@ -100,10 +100,19 @@ t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_A
 
 The user must have available *gnuplot* and *ffmpeg* (for video creation) as command line tools.
 
-Furthermore, the code uses *OMP* when the mode for parallel video processing is activated. Because of this, the compiler must support *OMP*. 
-In my case, the native clang and gcc on my MacBook do not natively support this. I have to use a *Homebrew* installed version of gcc, *gcc-15* with the flag *-fopenmp* in order to compile correctly.
 
+#### Optional OMP mode
+By default, parallel processing of frames is implemented using *fork()* to spawn child processes. However, those users who prefer an *OMP* approach, may activate it one of two ways:
+- Defining *GNUPLOTC_USE_OMP* before including *gnuplotc.h*
+    ```{C}
+    #define GNUPLOTC_USE_OMP
+    #include "gnuplotc.h"
+    ```
+- or by passing *-DGNUPLOTC_USE_OMP* as an argument to the compiler
+    ```
+    gcc-15 -DGNUPLOTC_USE_OMP example.c plot.c -o example_omp
+    ```
+In this case, the compiler should support OMP (in my Macbook the native gcc does not and I have to use a Homebrew version).
 
-If the user does not want to use this parallel mode, they may simply define the variable *GNUPLOTC_NO_OMP*?
 
 
