@@ -282,6 +282,10 @@ void next_frame_impl(t_gnuplot *interface, ...)
 }
 
 
+
+
+
+
 void process_video_parallel(t_gnuplot *interface)
 {
     #pragma omp parallel for schedule(dynamic)
@@ -299,6 +303,9 @@ void process_video_parallel(t_gnuplot *interface)
     snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i %s/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", GNUPLOTC_FRAMERATE, interface->size[0], interface->size[1], FRAMES_DIR, interface->file_name);
     system(buff);
 }
+
+
+
 
 
 void gnuplot_end(t_gnuplot *interface)
