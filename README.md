@@ -1,8 +1,7 @@
 # gnuplotC
 
-Simple and easy C interface to *gnuplot*. Allows for video creation.
+Simple and easy C interface to *gnuplot*. Allows to draw figures and create video animations (efficient by using parallelism).
 
-### Modes
 Currently, **gnuplotC** supports the following modes:
 
 
@@ -18,7 +17,7 @@ Currently, **gnuplotC** supports the following modes:
 ### Creating a plot
 
 1. **Start *gnuplot* interface.** Select mode, file name, figure size, ...
-2. *(Optional)* **Configure the interface.** Before adding elements!
+2. *(Optional)* **Set *gnuplot* configurations.** Before adding elements!
 3. **Add elements.**
 4. **End.**
 
@@ -37,7 +36,7 @@ gnuplot_end(ifc);
 Videos are built using *ffmpeg*, which must be installed and available. Treat each frame as its own independent figure. By default, each frame is piped directly to *ffmpeg* without the need to store it.
 
 1. **Start *gnuplot* interface.** Select framerate, ...
-2. *(Optional)* **Configure the interface.** Before adding elements!
+2. *(Optional)*  **Set configurations.** 
 3. **Add elements.**
 4. **Start a new frame.**
 5. **Repeat from step 2 as needed.**
@@ -64,10 +63,12 @@ gnuplot_end(ifc);
 ```
 
 
+
 ### Faster parallel video processing
 Parallel processing of the frames is possible, with each thread running *gnuplot* in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space. Internally, this is implemented with *OMP*.
 
 To activate this mode, simply call *activate_parallel_video_processing(...)* **before** starting the interface.
+
 
 
 ---
@@ -95,11 +96,11 @@ t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_A
 ```
 
 
+
 --- 
 ### Dependencies and compilation
 
 The user must have available *gnuplot* and *ffmpeg* (for video creation) as command line tools.
-
 
 #### Optional OMP mode
 By default, parallel processing of frames is implemented using *fork()* to spawn child processes. However, those users who prefer an *OMP* approach, may activate it one of two ways:
