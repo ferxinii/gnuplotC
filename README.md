@@ -23,6 +23,8 @@ Currently, **gnuplotC** supports the following modes:
 4. **End.**
 
 ```{C}
+int fontsize = 18, figsize[2] = {1080, 1080};
+
 t_gnuplot *ifc = gnuplot_start(PNG_2D, "segment.png", figsize, fontsize);
 draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
 gnuplot_end(ifc);
@@ -48,7 +50,8 @@ GNUPLOTC_FRAMERATE = 12;
 
 char *video_config[] = {"set view 70, 0", "unset border", "unset tics", 
                         "set isosamples 100", "set view equal xyz", NULL};
-ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
+
+ifc = gnuplot_start(VIDEO_3D, "sphere.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
 draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
 for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
     char buff[256]; 
@@ -71,6 +74,19 @@ To activate this mode, simply call *activate_parallel_video_processing(...)* bef
 
 The gnuplot configuration can be specified:
 - When calling *gnuplot_start(...)*, in the form of additional optional parameters.
-- Calling *gnuplot_config(...)*, in the form of additional optional parameters, **before** drawing any element.
+- Calling *gnuplot_config(...)*, **before** drawing any element.
 - In the case of a video, also when calling *new_frame(...)*.
 
+```{C}
+ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, "set title 'TEST TITLE'", "set xlabel 'x'");
+gnuplot_config(ifc, "set xrange [0:1]", "set yrange [0:1]");
+```
+
+
+Also, we may define a **NULL terminated** array of configurations, which we can pass at any point as an additional configuration using *GNUPLOTC_ARRAY()*.
+```{C}
+
+char *cmd_array[] = {"set xrange [0:1]", "set yrange [0:1]", NULL};
+ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_ARRAY(cmd_array));
+
+```
