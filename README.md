@@ -48,10 +48,11 @@ Optionally, the default framerate (24 fps) can be changed by modifying the globa
 ```{C}
 GNUPLOTC_FRAMERATE = 12;
 
-char *video_config[] = {"set view 70, 0", "unset border", "unset tics", 
-                        "set isosamples 100", "set view equal xyz", NULL};
+char *video_config[] = {"unset border", "unset tics", "set isosamples 100", 
+                        "set view equal xyz", NULL};
 
-ifc = gnuplot_start(VIDEO_3D, "sphere.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
+ifc = gnuplot_start(VIDEO_3D, "sphere.mp4", figsize, fontsize, 
+                    GNUPLOTC_ARRAY(video_config), "set view 70, 0");
 draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
 for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
     char buff[256]; 
@@ -66,7 +67,7 @@ gnuplot_end(ifc);
 ### Faster parallel video processing
 Parallel processing of the frames is possible, with each thread running *gnuplot* in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space. Internally, this is implemented with *OMP*.
 
-To activate this mode, simply call *activate_parallel_video_processing(...)* before adding any element and frame.
+To activate this mode, simply call *activate_parallel_video_processing(...)* **before** starting the interface.
 
 
 ---
@@ -77,16 +78,21 @@ The gnuplot configuration can be specified:
 - Calling *gnuplot_config(...)*, **before** drawing any element.
 - In the case of a video, also when calling *new_frame(...)*.
 
+Once an element in a plot (or frame) is drawn, it is not possible to change the gnuplot configuration.
+
 ```{C}
-ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, "set title 'TEST TITLE'", "set xlabel 'x'");
+t_gnuplot *ifc = gnuplot_start(PNG_2D, "circle.png", figsize, fontsize, "set title 'CIRCLE'", "set xlabel 'x'");
 gnuplot_config(ifc, "set xrange [0:1]", "set yrange [0:1]");
+[...]
 ```
 
 
-Also, we may define a **NULL terminated** array of configurations, which we can pass at any point as an additional configuration using *GNUPLOTC_ARRAY()*.
+Also, we may define a **NULL terminated** array of configurations, which we can pass at any point as an additional configuration using *GNUPLOTC_ARRAY()*:
 ```{C}
-
 char *cmd_array[] = {"set xrange [0:1]", "set yrange [0:1]", NULL};
-ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_ARRAY(cmd_array));
-
+t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_ARRAY(cmd_array));
+[...]
 ```
+
+
+
