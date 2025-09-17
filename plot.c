@@ -1,4 +1,4 @@
-// TODO: Make and remove temporal directories for video processing
+#include "plot.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,8 +6,12 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <omp.h>
-#include "plot.h"
+#include <sys/types.h>
+#include <sys/wait.h>
+#ifdef GNUPLOTC_USE_OMP 
+    #include <omp.h>
+#endif
+
 
 
 typedef struct t_gnuplot {
@@ -145,7 +149,10 @@ void activate_parallel_video_processing(int num_threads)
         exit(1);
     }
     GNUPLOTC_PARAL_VIDEO_THREADS = num_threads;
+
+#ifdef GNUPLOTC_USE_OMP
     omp_set_num_threads(num_threads);
+#endif
 
     remove_directory(TEMPLATES_DIR); // Safeguard in case previous run didnt exit correctly
     remove_directory(FRAMES_DIR);
@@ -283,11 +290,38 @@ void next_frame_impl(t_gnuplot *interface, ...)
 
 
 
-
-
-
 void process_video_parallel(t_gnuplot *interface)
 {
+    int active_procs = 0;
+
+#ifndef GNUPLOTC_USE_OMP 
+    for (int ii = 1; ii < interface->frame + 1; ii++) {
+        if (active_procs >= GNUPLOTC_PARAL_VIDEO_THREADS) {
+            wait(NULL);
+            active_procs--;
+        }
+        pid_t pid = fork();
+        if (pid < 0) {
+            puts("Error in process_video_parallel: Fork failed");
+            exit(1);
+        } else if (pid == 0) {  // Child process: run gnuplot
+            char scriptfile[256];
+            snprintf(scriptfile, sizeof(scriptfile), "%s/frame_%04d.plt", TEMPLATES_DIR, ii);
+            char cmd[512];
+            snprintf(cmd, sizeof(cmd), "gnuplot %s", scriptfile);
+            execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);  
+            // Current process is substituted by gnuplot unless error;
+            puts("Error in process_video_parallel: execl failed");
+            exit(1);
+        } else {  // Parent process: track child
+            active_procs++;
+        }
+    }
+    while (active_procs > 0) {   // Wait for any remaining children
+        wait(NULL);
+        active_procs--;
+    }
+#else
     #pragma omp parallel for schedule(dynamic)
     for (int ii=1; ii<interface->frame+1; ii++) {
         char scriptfile[256];
@@ -298,11 +332,22 @@ void process_video_parallel(t_gnuplot *interface)
         FILE *gnuplot_instance = popen(cmd, "r");
         pclose(gnuplot_instance);
     }
-
+#endif
+    
     char buff[1024];
     snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i %s/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", GNUPLOTC_FRAMERATE, interface->size[0], interface->size[1], FRAMES_DIR, interface->file_name);
     system(buff);
 }
+
+
+// void process_video_parallel(t_gnuplot *interface)
+// {
+
+//
+//     char buff[1024];
+//     snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i %s/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", GNUPLOTC_FRAMERATE, interface->size[0], interface->size[1], FRAMES_DIR, interface->file_name);
+//     system(buff);
+// }
 
 
 
