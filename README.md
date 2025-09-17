@@ -23,11 +23,9 @@ Currently, **gnuplotC** supports the following modes:
 4. **End.**
 
 ```{C}
-void example() {
-    t_gnuplot *ifc = gnuplot_start(PNG_2D, "segment.png", figsize, fontsize);
-    draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
-    gnuplot_end(ifc);
-}
+t_gnuplot *ifc = gnuplot_start(PNG_2D, "segment.png", figsize, fontsize);
+draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
+gnuplot_end(ifc);
 ```
 
 
@@ -46,20 +44,19 @@ Videos are built using *ffmpeg*, which must be installed and available. Treat ea
 Optionally, the default framerate (24 fps) can be changed by modifying the global variable *GNUPLOTC_FRAMERATE* **before** starting the interface.
 
 ```{C}
-void example() {
-    GNUPLOTC_FRAMERATE = 12;
+GNUPLOTC_FRAMERATE = 12;
 
-    char *video_config[] = {"set view 70, 0", "unset border", "unset tics", "set isosamples 100", "set view equal xyz", NULL};
-    ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
+char *video_config[] = {"set view 70, 0", "unset border", "unset tics", 
+                        "set isosamples 100", "set view equal xyz", NULL};
+ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
+draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
+    char buff[256]; 
+    snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
+    next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
     draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-    for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
-        char buff[256]; 
-        snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
-        next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
-        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-    }
-    gnuplot_end(ifc);
 }
+gnuplot_end(ifc);
 ```
 
 
@@ -69,6 +66,11 @@ Parallel processing of the frames is possible, with each thread running *gnuplot
 To activate this mode, simply call *activate_parallel_video_processing(...)* before adding any element and frame.
 
 
+---
+## Configuring the interface
 
-
+The gnuplot configuration can be specified:
+- When calling *gnuplot_start(...)*, in the form of additional optional parameters.
+- Calling *gnuplot_config(...)*, in the form of additional optional parameters, **before** drawing any element.
+- In the case of a video, also when calling *new_frame(...)*.
 
