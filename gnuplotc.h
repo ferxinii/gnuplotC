@@ -1,7 +1,7 @@
 #ifndef PLOT_H
 #define PLOT_H
 
-typedef struct t_gnuplot t_gnuplot;
+typedef struct t_gnuplot t_gnuplot;  // Interface to gnuplot
 
 enum gnuplot_type {
     PNG_2D,
