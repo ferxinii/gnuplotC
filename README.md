@@ -126,3 +126,12 @@ In this case, the compiler should support OMP (in my Macbook the native gcc does
 <img src="./example/16.gif" alt="Example 2" width="400" height="auto">
 </p>
 
+** Other examples I made using the library **
+<p align="center">
+<img src="./example/ex_1.png" alt="Example 3" width="400" height="auto" />
+<img src="./example/ex_2.png" alt="Example 4" width="400" height="auto">
+</p>
+<p align="center">
+<img src="./example/ex_3.png" alt="Example 5" width="400" height="auto" />
+<img src="./example/ex_3d.pdf" alt="Example 6" width="400" height="auto">
+</p>
