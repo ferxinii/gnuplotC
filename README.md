@@ -122,7 +122,7 @@ In this case, the compiler should support OMP (in my Macbook the native gcc does
 **Basic examples (see /example/example.c)**
 
 <p align="center">
-<img src="./example/8.png" alt="Example 1" width="400" height="auto" />
+<img src="./example/10.png" alt="Example 1" width="400" height="auto" />
 <img src="./example/16.gif" alt="Example 2" width="400" height="auto">
 </p>
 
