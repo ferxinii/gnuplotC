@@ -119,14 +119,14 @@ In this case, the compiler should support OMP (in my Macbook the native gcc does
 ---
 ### Examples
 
-** Basic examples (see /example/example.c) **
+**Basic examples (see /example/example.c)**
 
 <p align="center">
 <img src="./example/8.png" alt="Example 1" width="400" height="auto" />
 <img src="./example/16.gif" alt="Example 2" width="400" height="auto">
 </p>
 
-** Other examples I made using the library **
+**Other examples I made using the library**
 <p align="center">
 <img src="./example/ex_1.png" alt="Example 3" width="400" height="auto" />
 <img src="./example/ex_2.png" alt="Example 4" width="400" height="auto">
