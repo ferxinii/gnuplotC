@@ -133,5 +133,5 @@ In this case, the compiler should support OMP (in my Macbook the native gcc does
 </p>
 <p align="center">
 <img src="./example/ex_3.png" alt="Example 5" width="400" height="auto" />
-<img src="./example/ex_3d.pdf" alt="Example 6" width="400" height="auto">
+<img src="./example/ex_3d.png" alt="Example 6" width="400" height="auto">
 </p>
