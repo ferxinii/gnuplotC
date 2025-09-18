@@ -116,4 +116,13 @@ By default, parallel processing of frames is implemented using *fork()* to spawn
 In this case, the compiler should support OMP (in my Macbook the native gcc does not and I have to use a Homebrew version).
 
 
+---
+### Examples
+
+#### Basic examples (see /example/example.c)
+
+<p align="center">
+<img src="./example/8.png" alt="Example 1" width="400" height="auto" />
+<img src="./example/16.gif" alt="Example 2" width="400" height="auto">
+</p>
 
