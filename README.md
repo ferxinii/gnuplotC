@@ -65,7 +65,7 @@ gnuplot_end(ifc);
 
 
 ### Faster parallel video processing
-Parallel processing of the frames is possible, with each thread running *gnuplot* in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space. Internally, this is implemented with *OMP*.
+Parallel processing of the frames is possible, with each thread running *gnuplot* in parallel resulting in much faster processing times. The downside is that all the frames must be saved to disc beforehand (in a temporal directory), which can take up some space.
 
 To activate this mode, simply call *activate_parallel_video_processing(...)* **before** starting the interface.
 
