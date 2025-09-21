@@ -13,7 +13,6 @@
 #endif
 
 
-
 typedef struct t_gnuplot {
     FILE *pipe;
     enum gnuplot_type type;
@@ -27,7 +26,9 @@ typedef struct t_gnuplot {
 
 
 int GNUPLOTC_FRAMERATE = 24;
+
 int GNUPLOTC_PARAL_VIDEO_THREADS = 0;  
+
 
 void remove_directory(const char *path) 
 {
