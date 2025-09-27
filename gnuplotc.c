@@ -1,3 +1,12 @@
+/* -----------------------------------------
+ *              GNUPLOTC
+ *
+ *  Description: C Interface to gnuplot.
+ *  Author: Fernando Muñoz.
+ *  Github: ferxinii/gnuplotC
+ *  License: MIT
+ * --------------------------------------- */
+
 #include "gnuplotc.h"
 #include <stdio.h>
 #include <stdlib.h>

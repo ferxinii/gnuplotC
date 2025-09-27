@@ -1,6 +1,15 @@
 #ifndef PLOT_H
 #define PLOT_H
 
+/* -----------------------------------------
+ *              GNUPLOTC
+ *
+ *  Description: C Interface to gnuplot.
+ *  Author: Fernando Muñoz.
+ *  Github: ferxinii/gnuplotC
+ *  License: MIT
+ * --------------------------------------- */
+
 typedef struct t_gnuplot t_gnuplot;  // Interface to gnuplot
 
 enum gnuplot_type {
