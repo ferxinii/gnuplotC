@@ -73,7 +73,7 @@ int main() {
 
     ifc = gnuplot_start(PNG_2D, "6.png", figsize, fontsize,
                         "set title 'draw\\_2d'", GNUPLOTC_ARRAY(cmd_array));
-    draw_2d(ifc, x, y, 4, "w linespoints lw 2 ps 2 pt 7 title 'w linespoints'");
+    draw_2d(ifc, x, y, 4, LINESPOINTS, "lw 2 ps 2 pt 7 title 'w linespoints'");
     gnuplot_end(ifc);
     
     
@@ -89,7 +89,7 @@ int main() {
 
     ifc = gnuplot_start(PNG_2D, "7.png", figsize, fontsize,
                         "set title 'draw\\_array\\_2d'", GNUPLOTC_ARRAY(cmd_array));
-    draw_array_2d(ifc, coords, 3, "w lines dt '_ ' lw 4 title 'w lines'");
+    draw_array_2d(ifc, coords, 3, LINES, "dt '_ ' lw 4 title 'w lines'");
     gnuplot_end(ifc);
 
 
@@ -113,7 +113,7 @@ int main() {
     // DRAW_FUNCTION_2D
     ifc = gnuplot_start(PNG_2D, "10.png", figsize, fontsize,
                         "set title 'draw\\_function\\_2d'", GNUPLOTC_ARRAY(cmd_array));
-    draw_function_2d(ifc, 0, 1, 100, parabola, "w lines lw 2");
+    draw_function_2d(ifc, 0, 1, 100, parabola, LINES, "lw 2");
     gnuplot_end(ifc);
 
 
@@ -125,8 +125,8 @@ int main() {
     ifc = gnuplot_start(PNG_3D, "11.png", figsize, fontsize,
                         "set title 'draw\\_sphere\\_3d'", GNUPLOTC_ARRAY(cmd_array),
                         "set pm3d depthorder");
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", "title 'lines'");
-    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", "title 'pm3d'");
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, "title 'lines'");
+    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, "title 'pm3d'");
     gnuplot_end(ifc);
 
 
@@ -134,8 +134,8 @@ int main() {
     ifc = gnuplot_start(PNG_3D, "12.png", figsize, fontsize,
                         "set title 'draw\\_sphere\\_3d'", GNUPLOTC_ARRAY(cmd_array),
                         "set pm3d depthorder", "unset colorbox", "set isosamples 100");
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", "title 'lines'");
-    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", "title 'pm3d'");
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, "title 'lines'");
+    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, "title 'pm3d'");
     gnuplot_end(ifc);
 
 
@@ -161,15 +161,15 @@ int main() {
     char *video_config[] = {"set title 'video'", "set pm3d depthorder", "unset colorbox", "set view 70, 0",
                             "unset border", "unset tics", "set isosamples 100", "set view equal xyz", NULL};
     ifc = gnuplot_start(VIDEO_3D, "14.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
+    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, NULL);
     for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
         char buff[256]; 
         snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
 
         next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
-        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
+        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, NULL);
     }
     gnuplot_end(ifc);
 
@@ -179,15 +179,15 @@ int main() {
     activate_parallel_video_processing(8);
 
     ifc = gnuplot_start(VIDEO_3D, "15.mp4", figsize, fontsize, GNUPLOTC_ARRAY(video_config));
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
+    draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, NULL);
     for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
         char buff[256]; 
         snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
 
         next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
-        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
-        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, "pm3d", NULL);
+        draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
+        draw_sphere_3d(ifc, 0.8, 0.8, 0.8, 0.1, PM3D, NULL);
     }
     gnuplot_end(ifc);
 

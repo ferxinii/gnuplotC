@@ -52,12 +52,12 @@ char *video_config[] = {"unset border", "unset tics", "set isosamples 100",
 
 ifc = gnuplot_start(VIDEO_3D, "sphere.mp4", figsize, fontsize, 
                     GNUPLOTC_ARRAY(video_config), "set view 70, 0");
-draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
 for (int ii=1; ii<GNUPLOTC_FRAMERATE*3+1; ii++) {
     char buff[256]; 
     snprintf(buff, 256, "set view 70, %f", fmod(ii*360.0/(GNUPLOTC_FRAMERATE*3), 360.0));
     next_frame(ifc, GNUPLOTC_ARRAY(video_config), buff);
-    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, "lines", NULL);
+    draw_sphere_3d(ifc, 0.5, 0.5, 0.5, 0.2, LINES, NULL);
 }
 gnuplot_end(ifc);
 ```

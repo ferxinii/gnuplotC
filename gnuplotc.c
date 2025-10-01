@@ -456,6 +456,32 @@ int config_specifies_title(const char *config)
 }
 
 
+void pipe_element_type(t_gnuplot *interface, enum element_type type)
+{
+    fprintf(interface->pipe, " w ");
+    switch (type) {
+        case LINES: {
+            fprintf(interface->pipe, "lines");
+            break;
+        } case POINTS: {
+            fprintf(interface->pipe, "points");
+            break;
+        } case LINESPOINTS: {
+            fprintf(interface->pipe, "linespoints");
+            break;
+        } case POLYGONS: {
+            fprintf(interface->pipe, "polygons");
+            break;
+        } case PM3D: {
+            fprintf(interface->pipe, "pm3d");
+            break;
+        } default: {
+            puts("Error: Element type not implemented!");
+            exit(1);
+        }
+    }
+}
+
 void pipe_element_config(t_gnuplot *interface, const char *config)
 {
     if (!config) {
@@ -468,18 +494,20 @@ void pipe_element_config(t_gnuplot *interface, const char *config)
 }
 
 
-void draw_datablock(t_gnuplot *interface, const char *datablock_name, const char *config)
+void draw_datablock(t_gnuplot *interface, const char *datablock_name, enum element_type type, const char *config)
 {
     guard_active_plotting(interface);
     fprintf(interface->pipe, "$%s", datablock_name);
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
 
-void draw_file(t_gnuplot *interface, const char *file_name, const char *config)
+void draw_file(t_gnuplot *interface, const char *file_name, enum element_type type, const char *config)
 {
     guard_active_plotting(interface);
     fprintf(interface->pipe, "'%s'", file_name);
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
@@ -501,7 +529,7 @@ void draw_point_2d(t_gnuplot *interface, double x, double y, const char *config)
 } 
 
 
-void draw_2d(t_gnuplot *interface, double *x, double *y, int N, const char *config)
+void draw_2d(t_gnuplot *interface, double *x, double *y, int N, enum element_type type, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -514,11 +542,12 @@ void draw_2d(t_gnuplot *interface, double *x, double *y, int N, const char *conf
         }
     }
     fprintf(interface->pipe, "\'\"");
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
 
-void draw_array_2d(t_gnuplot *interface, double **coords, int N, const char *config)
+void draw_array_2d(t_gnuplot *interface, double **coords, int N, enum element_type type, const char *config)
 { 
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -531,6 +560,7 @@ void draw_array_2d(t_gnuplot *interface, double **coords, int N, const char *con
         }
     }
     fprintf(interface->pipe, "\'\"");
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
@@ -581,7 +611,7 @@ void draw_segment_2d(t_gnuplot *interface, double x0, double y0, double xf, doub
 }
 
 
-void draw_function_2d(t_gnuplot *interface, double x0, double xf, int N, double (*fun)(double), const char *config)
+void draw_function_2d(t_gnuplot *interface, double x0, double xf, int N, double (*fun)(double), enum element_type type, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -595,16 +625,18 @@ void draw_function_2d(t_gnuplot *interface, double x0, double xf, int N, double 
         }
     }
     fprintf(interface->pipe, "\'\"");
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
 
-void draw_sphere_3d(t_gnuplot *interface, double x, double y, double z, double r, const char *type, const char *config)
+void draw_sphere_3d(t_gnuplot *interface, double x, double y, double z, double r, enum element_type type, const char *config)
 {   // type must be: pm3d, lines, points, ... (polygons? Should produce nothing if haven't "set pm3d", else, same as pm3d)
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);
-    fprintf(interface->pipe, "[u=-pi/2:pi/2] [v=0:2*pi] %f+%f*cos(u)*cos(v),%f+%f*cos(u)*sin(v),%f+%f*sin(u) w %s", 
-            x, r, y, r, z, r, type);
+    fprintf(interface->pipe, "[u=-pi/2:pi/2] [v=0:2*pi] %f+%f*cos(u)*cos(v),%f+%f*cos(u)*sin(v),%f+%f*sin(u)", 
+            x, r, y, r, z, r);
+    pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
 
