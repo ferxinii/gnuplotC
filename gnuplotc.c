@@ -272,6 +272,20 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
 }
 
 
+void next_subplot_impl(t_gnuplot *interface, ...)
+{
+    interface->state = 0;
+    interface->frame++;
+    fputs("\n", interface->pipe);
+    fflush(interface->pipe);
+
+    va_list ap;
+    va_start(ap, interface);
+    pipe_config_vargs(interface, ap);
+    va_end(ap);
+}
+
+
 void next_frame_impl(t_gnuplot *interface, ...)
 {
     interface->state = 0;
@@ -503,10 +517,10 @@ void draw_datablock(t_gnuplot *interface, const char *datablock_name, enum eleme
 }
 
 
-void draw_file(t_gnuplot *interface, const char *file_name, enum element_type type, const char *config)
+void draw_file(t_gnuplot *interface, const char *file_name, int header_lines_skip, enum element_type type, const char *config)
 {
     guard_active_plotting(interface);
-    fprintf(interface->pipe, "'%s'", file_name);
+    fprintf(interface->pipe, "'%s' skip %d", file_name, header_lines_skip);
     pipe_element_type(interface, type);
     pipe_element_config(interface, config);
 }
