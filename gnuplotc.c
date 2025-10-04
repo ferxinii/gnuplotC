@@ -22,6 +22,12 @@
 #endif
 
 
+typedef struct t_frame {
+    char *commands;
+    int id;
+} t_frame;
+
+
 typedef struct t_gnuplot {
     FILE *pipe;
     enum gnuplot_type type;
