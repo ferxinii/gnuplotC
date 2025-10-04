@@ -428,17 +428,19 @@ void process_video_parallel(t_gnuplot *interface)
 void gnuplot_end(t_gnuplot *interface)
 {   
     fputs("\n", interface->pipe);
-
-    if (GNUPLOTC_PARAL_VIDEO_THREADS == 0) {
+    if (interface->type != VIDEO_3D && interface->type != VIDEO_2D) {
         pclose(interface->pipe);
-    } else if (GNUPLOTC_PARAL_VIDEO_THREADS > 0) {
-        fclose(interface->pipe);
-        process_video_parallel(interface);
-        remove_directory(FRAMES_DIR);
     } else {
-        puts("Error: GNUPLOTC_PARAL_VIDEO_THREADS < 0.");
+        if (GNUPLOTC_PARAL_VIDEO_THREADS == 0) {
+            pclose(interface->pipe);
+        } else if (GNUPLOTC_PARAL_VIDEO_THREADS > 0) {
+            fclose(interface->pipe);
+            process_video_parallel(interface);
+            remove_directory(FRAMES_DIR);
+        } else {
+            puts("Error: GNUPLOTC_PARAL_VIDEO_THREADS < 0.");
+        }
     }
-
     free(interface->file_name);
 }
 
