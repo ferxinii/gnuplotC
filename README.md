@@ -100,7 +100,7 @@ t_gnuplot *ifc = gnuplot_start(PNG_2D, "test.png", figsize, fontsize, GNUPLOTC_A
 --- 
 ### Dependencies and compilation
 
-The user must have available *gnuplot* and *ffmpeg* (for video creation) as command line tools.
+The user must have available *gnuplot* and *ffmpeg* (for video creation) as command line tools. Also, 
 
 #### Optional OMP mode
 By default, parallel processing of frames is implemented using *fork()* to spawn child processes. However, those users who prefer an *OMP* approach, may activate it one of two ways:

@@ -22,12 +22,51 @@
 #endif
 
 
+// Parallel frame handling
 typedef struct t_frame {
-    char *commands;
-    int id;
+    char *data;
+    size_t size;
+    struct t_frame *next;
 } t_frame;
 
 
+typedef struct t_flist {
+    int N;
+    t_frame *head;  // Only NOT NULL if in parallel processing mode!
+    t_frame *tail;
+} t_flist;
+
+
+void parallel_frame_add(t_flist *flist) {
+    t_frame *new_frame = malloc(sizeof(t_frame));
+    new_frame->data = NULL;
+    new_frame->size = 0;
+    new_frame->next = NULL;
+
+    if (flist->head == NULL) {
+        flist->head = new_frame;
+        flist->tail = new_frame;
+        flist->N = 1;  // This should be guaranteed!!
+    } else {
+        flist->tail->next = new_frame;
+        flist->tail = new_frame;
+        flist->N++;
+    }
+}
+
+
+void free_frame_memory(t_flist *flist) {
+    t_frame *current = flist->head;
+    while (current) {
+        t_frame *next = current->next; // store next before freeing
+        free(current->data);
+        free(current);
+        current = next;
+    }
+}
+
+
+// Main interface
 typedef struct t_gnuplot {
     FILE *pipe;
     enum gnuplot_type type;
@@ -36,7 +75,7 @@ typedef struct t_gnuplot {
     int font_size;
     int size[2];
     int state;
-    int frame;
+    t_flist frames;
 } t_gnuplot;
 
 
@@ -170,9 +209,7 @@ void activate_parallel_video_processing(int num_threads)
     omp_set_num_threads(num_threads);
 #endif
 
-    remove_directory(TEMPLATES_DIR); // Safeguard in case previous run didnt exit correctly
     remove_directory(FRAMES_DIR);
-    mkdir(TEMPLATES_DIR, 0755);
     mkdir(FRAMES_DIR, 0755);
 }
 
@@ -188,15 +225,17 @@ void setup_video_output(t_gnuplot *interface)
         pipe_terminal_output(interface, "pngcairo", buff);
 
     } else if (GNUPLOTC_PARAL_VIDEO_THREADS > 0) {
-        // We write each frame into a gnuplot script file
+        // We store each frame as the set of commands to be executed.
         // In the end these templates will be executed in parallel to produce each frame as a png
         // ffmpeg will then make a video from them
-        char buff[256];
-        snprintf(buff, 256, "%s/frame_%04d.plt", TEMPLATES_DIR, interface->frame);
-        interface->pipe = fopen(buff, "w");
+        
+        parallel_frame_add(&interface->frames);
 
-        snprintf(buff, 256, "%s/frame_%04d.png", FRAMES_DIR, interface->frame);
-        pipe_terminal_output(interface, "pngcairo", buff);
+        interface->pipe = open_memstream(&interface->frames.tail->data, &interface->frames.tail->size);
+
+        char pngfile[256];
+        snprintf(pngfile, 256, "%s/frame_%04d.png", FRAMES_DIR, interface->frames.N);
+        pipe_terminal_output(interface, "pngcairo", pngfile);
     } else {
         puts("Error: GNUPLOTC_PARAL_VIDEO_THREADS < 0");
         exit(1);
@@ -215,7 +254,8 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
     interface->size[1] = size[1];
     interface->font_size = font_size;
     interface->state = 0;
-    interface->frame = 1;
+    interface->frames.head = NULL;
+    interface->frames.N = 1;
 
     switch (type) {
         case PNG_2D: {
@@ -281,7 +321,6 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
 void next_subplot_impl(t_gnuplot *interface, ...)
 {
     interface->state = 0;
-    interface->frame++;
     fputs("\n", interface->pipe);
     fflush(interface->pipe);
 
@@ -295,21 +334,23 @@ void next_subplot_impl(t_gnuplot *interface, ...)
 void next_frame_impl(t_gnuplot *interface, ...)
 {
     interface->state = 0;
-    interface->frame++;
     fputs("\n", interface->pipe);
     fflush(interface->pipe);
 
     if (GNUPLOTC_PARAL_VIDEO_THREADS > 0) {
         // Open new file to write template of frame to:
         fclose(interface->pipe);
-        char buff[256];
-        snprintf(buff, 256, "%s/frame_%04d.plt", TEMPLATES_DIR, interface->frame);
-        interface->pipe = fopen(buff, "w");
+        
+        parallel_frame_add(&interface->frames);
+        interface->pipe = open_memstream(&interface->frames.tail->data, &interface->frames.tail->size);
 
         // Setup config
-        snprintf(buff, 256, "%s/frame_%04d.png", FRAMES_DIR, interface->frame);
+        char buff[256];
+        snprintf(buff, 256, "%s/frame_%04d.png", FRAMES_DIR, interface->frames.N);
         pipe_terminal_output(interface, "pngcairo", buff);
         pipe_default_commands(interface);
+    } else {
+        interface->frames.N++;
     }
     
     va_list ap;
@@ -321,65 +362,66 @@ void next_frame_impl(t_gnuplot *interface, ...)
 
 
 void process_video_parallel(t_gnuplot *interface)
-{
-    int active_procs = 0;
+{   
+    // Create array of pointers to frame for easy reference
+    t_frame **farray = malloc(sizeof(t_frame*) * interface->frames.N);
+    t_frame *current = interface->frames.head;
+    for (int ii=0; ii<interface->frames.N; ii++) {
+        farray[ii] = current;
+        current = current->next;
+    }
 
 #ifndef GNUPLOTC_USE_OMP 
-    for (int ii = 1; ii < interface->frame + 1; ii++) {
-        if (active_procs >= GNUPLOTC_PARAL_VIDEO_THREADS) {
-            wait(NULL);
+    int active_procs = 0;
+    for (int ii=0; ii<interface->frames.N; ii++) {
+        // Limit number of concurrent processes
+        while (active_procs >= GNUPLOTC_PARAL_VIDEO_THREADS) {
+            wait(NULL);  // Wait for any child
             active_procs--;
         }
+
         pid_t pid = fork();
-        if (pid < 0) {
-            puts("Error in process_video_parallel: Fork failed");
-            exit(1);
-        } else if (pid == 0) {  // Child process: run gnuplot
-            char scriptfile[256];
-            snprintf(scriptfile, sizeof(scriptfile), "%s/frame_%04d.plt", TEMPLATES_DIR, ii);
-            char cmd[512];
-            snprintf(cmd, sizeof(cmd), "gnuplot %s", scriptfile);
-            execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);  
-            // Current process is substituted by gnuplot unless error;
-            puts("Error in process_video_parallel: execl failed");
-            exit(1);
-        } else {  // Parent process: track child
+        if (pid < 0) { perror("fork"); exit(1); } 
+        else if (pid == 0) {  // Child process
+            FILE *gp = popen("gnuplot", "w");
+            if (!gp) { perror("popen gnuplot"); exit(1); }
+            fwrite(farray[ii]->data, 1, farray[ii]->size, gp);
+            pclose(gp);  // Wait for gnuplot to finish
+            exit(0);      // Child exits
+        } 
+        else {  // Parent process: track active children
             active_procs++;
         }
     }
-    while (active_procs > 0) {   // Wait for any remaining children
+    while (active_procs > 0) {  // Wait for remaining children
         wait(NULL);
         active_procs--;
     }
 #else
-    #pragma omp parallel for schedule(dynamic)
-    for (int ii=1; ii<interface->frame+1; ii++) {
-        char scriptfile[256];
-        snprintf(scriptfile, sizeof(scriptfile), "%s/frame_%04d.plt", TEMPLATES_DIR, ii);
-
-        char cmd[512];
-        snprintf(cmd, sizeof(cmd), "gnuplot %s", scriptfile);
-        FILE *gnuplot_instance = popen(cmd, "r");
-        pclose(gnuplot_instance);
+    if (GNUPLOTC_PARAL_VIDEO_THREADS == 1) {
+        for (int ii=0; ii<interface->frames.N; ii++) {
+            FILE *gp = popen("gnuplot","w");
+            fwrite(farray[ii]->data, 1, farray[ii]->size, gp);
+            pclose(gp);
+        }
+    } else {
+        #pragma omp parallel for schedule(dynamic)
+        for (int ii=0; ii<interface->frames.N; ii++) {
+            t_frame *frame = farray[ii];
+            FILE *gnuplot_instance = popen("gnuplot", "w");
+            fwrite(frame->data, 1, frame->size, gnuplot_instance);
+            pclose(gnuplot_instance);
+        }
     }
 #endif
+
+    free_frame_memory(&interface->frames);
+    free(farray);
     
     char buff[1024];
     snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i %s/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", GNUPLOTC_FRAMERATE, interface->size[0], interface->size[1], FRAMES_DIR, interface->file_name);
     system(buff);
 }
-
-
-// void process_video_parallel(t_gnuplot *interface)
-// {
-
-//
-//     char buff[1024];
-//     snprintf(buff, 1024, "ffmpeg -y -loglevel error -framerate %d -s:v %dx%d -i %s/frame_%%04d.png -pix_fmt yuv420p -c:v libx264 -crf 18 %s", GNUPLOTC_FRAMERATE, interface->size[0], interface->size[1], FRAMES_DIR, interface->file_name);
-//     system(buff);
-// }
-
-
 
 
 
@@ -392,7 +434,6 @@ void gnuplot_end(t_gnuplot *interface)
     } else if (GNUPLOTC_PARAL_VIDEO_THREADS > 0) {
         fclose(interface->pipe);
         process_video_parallel(interface);
-        remove_directory(TEMPLATES_DIR);
         remove_directory(FRAMES_DIR);
     } else {
         puts("Error: GNUPLOTC_PARAL_VIDEO_THREADS < 0.");

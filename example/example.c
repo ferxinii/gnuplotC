@@ -175,6 +175,7 @@ int main() {
 
 
     // PARALLEL VIDEO PROCESSING
+
     GNUPLOTC_FRAMERATE = 60;
     activate_parallel_video_processing(8);
 

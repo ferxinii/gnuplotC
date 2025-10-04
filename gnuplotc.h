@@ -70,8 +70,7 @@ void draw_solid_triangle_3d(t_gnuplot *interface, double v0[3], double v1[3], do
     PRIVATE DECLARATIONS (IGNORE)
   --------------------------------- */
 
-#define TEMPLATES_DIR "GNUPLOTC_TEMPLATES_TMP"
-#define FRAMES_DIR "GNUPLOTC_FRAMES_TMP"
+#define FRAMES_DIR "GNUPLOTC_FRAMES_TMP"  // Only created in parallel frame processing mode
 
 #define GNUPLOTC_ARRAY_MARKER  ((char*) -1)
 
