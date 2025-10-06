@@ -23,22 +23,22 @@
 
 
 // Parallel frame handling
-typedef struct t_frame {
+typedef struct frame {
     char *data;
     size_t size;
-    struct t_frame *next;
-} t_frame;
+    struct frame *next;
+} s_frame;
 
 
-typedef struct t_flist {
+typedef struct flist {
     int N;
-    t_frame *head;  // Only NOT NULL if in parallel processing mode!
-    t_frame *tail;
-} t_flist;
+    s_frame *head;  // Only NOT NULL if in parallel processing mode!
+    s_frame *tail;
+} s_flist;
 
 
-void parallel_frame_add(t_flist *flist) {
-    t_frame *new_frame = malloc(sizeof(t_frame));
+void parallel_frame_add(s_flist *flist) {
+    s_frame *new_frame = malloc(sizeof(s_frame));
     new_frame->data = NULL;
     new_frame->size = 0;
     new_frame->next = NULL;
@@ -55,10 +55,10 @@ void parallel_frame_add(t_flist *flist) {
 }
 
 
-void free_frame_memory(t_flist *flist) {
-    t_frame *current = flist->head;
+void free_frame_memory(s_flist *flist) {
+    s_frame *current = flist->head;
     while (current) {
-        t_frame *next = current->next; // store next before freeing
+        s_frame *next = current->next; // store next before freeing
         free(current->data);
         free(current);
         current = next;
@@ -67,7 +67,7 @@ void free_frame_memory(t_flist *flist) {
 
 
 // Main interface
-typedef struct t_gnuplot {
+typedef struct s_gnuplot {
     FILE *pipe;
     enum gnuplot_type type;
     int dim;
@@ -75,8 +75,8 @@ typedef struct t_gnuplot {
     int font_size;
     int size[2];
     int state;
-    t_flist frames;
-} t_gnuplot;
+    s_flist frames;
+} s_gnuplot;
 
 
 int GNUPLOTC_FRAMERATE = 24;
@@ -131,7 +131,7 @@ FILE *popen_gnuplot(void)
 }
 
 
-void pipe_terminal_output(t_gnuplot *interface, const char *terminal, char *outfile)
+void pipe_terminal_output(s_gnuplot *interface, const char *terminal, char *outfile)
 {
     int NMAX = 1024;
     char buff[NMAX];
@@ -151,7 +151,7 @@ void pipe_terminal_output(t_gnuplot *interface, const char *terminal, char *outf
 }
 
 
-void pipe_command(t_gnuplot *interface, char *cmd)
+void pipe_command(s_gnuplot *interface, char *cmd)
 {   // Adds newline \n by default
     if (interface->state != 0) {
         puts("Error! Cannot execute command when plotting is active. Execute all commands before drawing any element.");
@@ -162,7 +162,7 @@ void pipe_command(t_gnuplot *interface, char *cmd)
 }
 
 
-void pipe_config_vargs(t_gnuplot *interface, va_list ap)
+void pipe_config_vargs(s_gnuplot *interface, va_list ap)
 {   // Pipes configuration variable arguments which may be literal strings or an 
     // array of literal strings (NULL terminated, and marked with a sentinel 
     // GNUPLOTC_ARRAY_MARKER). These can be in any order and as many as needed, but 
@@ -182,7 +182,7 @@ void pipe_config_vargs(t_gnuplot *interface, va_list ap)
 }
 
 
-void gnuplot_config_impl(t_gnuplot *interface, ...)
+void gnuplot_config_impl(s_gnuplot *interface, ...)
 {
     va_list ap;
     va_start(ap, interface);
@@ -191,7 +191,7 @@ void gnuplot_config_impl(t_gnuplot *interface, ...)
 }
 
 
-void pipe_default_commands(t_gnuplot *interface)
+void pipe_default_commands(s_gnuplot *interface)
 {
     pipe_command(interface, "set parametric");
 }
@@ -214,7 +214,7 @@ void activate_parallel_video_processing(int num_threads)
 }
 
 
-void setup_video_output(t_gnuplot *interface)
+void setup_video_output(s_gnuplot *interface)
 {
     if (GNUPLOTC_PARAL_VIDEO_THREADS == 0) {
         // We pipe each frame from gnuplot directly into ffmpeg as a png
@@ -243,9 +243,9 @@ void setup_video_output(t_gnuplot *interface)
 }
 
 
-t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...) 
+s_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...) 
 {
-    t_gnuplot *interface = malloc(sizeof(t_gnuplot));
+    s_gnuplot *interface = malloc(sizeof(s_gnuplot));
     interface->pipe = NULL;  // safeguard 
     interface->type = type;
     interface->dim = -1;  // safeguard 
@@ -318,7 +318,7 @@ t_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[
 }
 
 
-void next_subplot_impl(t_gnuplot *interface, ...)
+void next_subplot_impl(s_gnuplot *interface, ...)
 {
     interface->state = 0;
     fputs("\n", interface->pipe);
@@ -331,7 +331,7 @@ void next_subplot_impl(t_gnuplot *interface, ...)
 }
 
 
-void next_frame_impl(t_gnuplot *interface, ...)
+void next_frame_impl(s_gnuplot *interface, ...)
 {
     interface->state = 0;
     fputs("\n", interface->pipe);
@@ -361,11 +361,11 @@ void next_frame_impl(t_gnuplot *interface, ...)
 
 
 
-void process_video_parallel(t_gnuplot *interface)
+void process_video_parallel(s_gnuplot *interface)
 {   
     // Create array of pointers to frame for easy reference
-    t_frame **farray = malloc(sizeof(t_frame*) * interface->frames.N);
-    t_frame *current = interface->frames.head;
+    s_frame **farray = malloc(sizeof(s_frame*) * interface->frames.N);
+    s_frame *current = interface->frames.head;
     for (int ii=0; ii<interface->frames.N; ii++) {
         farray[ii] = current;
         current = current->next;
@@ -407,7 +407,7 @@ void process_video_parallel(t_gnuplot *interface)
     } else {
         #pragma omp parallel for schedule(dynamic)
         for (int ii=0; ii<interface->frames.N; ii++) {
-            t_frame *frame = farray[ii];
+            s_frame *frame = farray[ii];
             FILE *gnuplot_instance = popen("gnuplot", "w");
             fwrite(frame->data, 1, frame->size, gnuplot_instance);
             pclose(gnuplot_instance);
@@ -425,7 +425,7 @@ void process_video_parallel(t_gnuplot *interface)
 
 
 
-void gnuplot_end(t_gnuplot *interface)
+void gnuplot_end(s_gnuplot *interface)
 {   
     fputs("\n", interface->pipe);
     if (interface->type != VIDEO_3D && interface->type != VIDEO_2D) {
@@ -453,7 +453,7 @@ void video_to_gif(const char *file_video, const char *file_gif, int size[2], int
 }
 
 
-int guard_is2d(t_gnuplot *interface)
+int guard_is2d(s_gnuplot *interface)
 {
     if (interface->dim == 2) return 1;
     puts("Error: Cannot use 2d method!");
@@ -461,7 +461,7 @@ int guard_is2d(t_gnuplot *interface)
 }
 
 
-int guard_is3d(t_gnuplot *interface)
+int guard_is3d(s_gnuplot *interface)
 {
     if (interface->dim == 3) return 1;
     puts("Error: Cannot use 3d method!");
@@ -469,7 +469,7 @@ int guard_is3d(t_gnuplot *interface)
 }
 
 
-void guard_active_plotting(t_gnuplot *interface)
+void guard_active_plotting(s_gnuplot *interface)
 {
     if (interface->state == 0) {
         if (interface->dim == 2) {
@@ -489,7 +489,7 @@ void guard_active_plotting(t_gnuplot *interface)
 }
 
 
-void add_datablock_from_file(t_gnuplot *interface, const char *filename, int header_lines_skip, const char *datablock_name)
+void add_datablock_from_file(s_gnuplot *interface, const char *filename, int header_lines_skip, const char *datablock_name)
 {
     if (interface->state != 0) {
         puts("Cannot add datablock when plotting is active. Do so before drawing any element."); 
@@ -519,7 +519,7 @@ int config_specifies_title(const char *config)
 }
 
 
-void pipe_element_type(t_gnuplot *interface, enum element_type type)
+void pipe_element_type(s_gnuplot *interface, enum element_type type)
 {
     fprintf(interface->pipe, " w ");
     switch (type) {
@@ -545,7 +545,7 @@ void pipe_element_type(t_gnuplot *interface, enum element_type type)
     }
 }
 
-void pipe_element_config(t_gnuplot *interface, const char *config)
+void pipe_element_config(s_gnuplot *interface, const char *config)
 {
     if (!config) {
         fprintf(interface->pipe, " notitle");
@@ -557,7 +557,7 @@ void pipe_element_config(t_gnuplot *interface, const char *config)
 }
 
 
-void draw_datablock(t_gnuplot *interface, const char *datablock_name, enum element_type type, const char *config)
+void draw_datablock(s_gnuplot *interface, const char *datablock_name, enum element_type type, const char *config)
 {
     guard_active_plotting(interface);
     fprintf(interface->pipe, "$%s", datablock_name);
@@ -566,7 +566,7 @@ void draw_datablock(t_gnuplot *interface, const char *datablock_name, enum eleme
 }
 
 
-void draw_file(t_gnuplot *interface, const char *file_name, int header_lines_skip, enum element_type type, const char *config)
+void draw_file(s_gnuplot *interface, const char *file_name, int header_lines_skip, enum element_type type, const char *config)
 {
     guard_active_plotting(interface);
     fprintf(interface->pipe, "'%s' skip %d", file_name, header_lines_skip);
@@ -575,14 +575,14 @@ void draw_file(t_gnuplot *interface, const char *file_name, int header_lines_ski
 }
 
 
-void draw_command(t_gnuplot *interface, const char *command)
+void draw_command(s_gnuplot *interface, const char *command)
 {
     guard_active_plotting(interface);
     fprintf(interface->pipe, "%s ", command);
 }
 
 
-void draw_point_2d(t_gnuplot *interface, double x, double y, const char *config)
+void draw_point_2d(s_gnuplot *interface, double x, double y, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -592,7 +592,7 @@ void draw_point_2d(t_gnuplot *interface, double x, double y, const char *config)
 } 
 
 
-void draw_2d(t_gnuplot *interface, double *x, double *y, int N, enum element_type type, const char *config)
+void draw_2d(s_gnuplot *interface, double *x, double *y, int N, enum element_type type, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -610,7 +610,7 @@ void draw_2d(t_gnuplot *interface, double *x, double *y, int N, enum element_typ
 }
 
 
-void draw_array_2d(t_gnuplot *interface, double **coords, int N, enum element_type type, const char *config)
+void draw_array_2d(s_gnuplot *interface, double **coords, int N, enum element_type type, const char *config)
 { 
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -628,7 +628,7 @@ void draw_array_2d(t_gnuplot *interface, double **coords, int N, enum element_ty
 }
 
 
-void draw_errorbars_2d(t_gnuplot *interface, double *x, double *mean, double *err, int N, const char *config)
+void draw_errorbars_2d(s_gnuplot *interface, double *x, double *mean, double *err, int N, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -645,7 +645,7 @@ void draw_errorbars_2d(t_gnuplot *interface, double *x, double *mean, double *er
 }
 
 
-void draw_arrows_from_array_2d(t_gnuplot *interface, double **coords, int N, int spacing, int offset, const char *config)
+void draw_arrows_from_array_2d(s_gnuplot *interface, double **coords, int N, int spacing, int offset, const char *config)
 {   
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -664,7 +664,7 @@ void draw_arrows_from_array_2d(t_gnuplot *interface, double **coords, int N, int
 }
 
 
-void draw_segment_2d(t_gnuplot *interface, double x0, double y0, double xf, double yf, const char *config)
+void draw_segment_2d(s_gnuplot *interface, double x0, double y0, double xf, double yf, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -674,7 +674,7 @@ void draw_segment_2d(t_gnuplot *interface, double x0, double y0, double xf, doub
 }
 
 
-void draw_function_2d(t_gnuplot *interface, double x0, double xf, int N, double (*fun)(double), enum element_type type, const char *config)
+void draw_function_2d(s_gnuplot *interface, double x0, double xf, int N, double (*fun)(double), enum element_type type, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -693,7 +693,7 @@ void draw_function_2d(t_gnuplot *interface, double x0, double xf, int N, double 
 }
 
 
-void draw_sphere_3d(t_gnuplot *interface, double x, double y, double z, double r, enum element_type type, const char *config)
+void draw_sphere_3d(s_gnuplot *interface, double x, double y, double z, double r, enum element_type type, const char *config)
 {   // type must be: pm3d, lines, points, ... (polygons? Should produce nothing if haven't "set pm3d", else, same as pm3d)
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);
@@ -704,7 +704,7 @@ void draw_sphere_3d(t_gnuplot *interface, double x, double y, double z, double r
 }
 
 
-void draw_solid_triangle_3d(t_gnuplot *interface, double v0[3], double v1[3], double v2[3], const char *config)
+void draw_solid_triangle_3d(s_gnuplot *interface, double v0[3], double v1[3], double v2[3], const char *config)
 {
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);
@@ -717,7 +717,7 @@ void draw_solid_triangle_3d(t_gnuplot *interface, double v0[3], double v1[3], do
 }
 
 
-void draw_polytope_3d(t_gnuplot *interface, double **coords, int N, const char *config)
+void draw_polytope_3d(s_gnuplot *interface, double **coords, int N, const char *config)
 {
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);

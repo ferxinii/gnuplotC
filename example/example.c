@@ -15,7 +15,7 @@ int main() {
     /* ----- BASIC EXAMPLES ----- */
 
     // GNUPLOTC_start:
-    t_gnuplot *ifc = gnuplot_start(PNG_2D, "1.png", figsize, fontsize);
+    s_gnuplot *ifc = gnuplot_start(PNG_2D, "1.png", figsize, fontsize);
     draw_segment_2d(ifc, 0, 0, 1, 1, NULL); 
     draw_segment_2d(ifc, 1, 0, 0.4, 0.6, "lw 2"); 
     gnuplot_end(ifc);
