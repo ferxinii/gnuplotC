@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(gnuplotC LANGUAGE C)
+project(gnuplotC LANGUAGES C)
 
 add_library(gnuplotC STATIC
     gnuplotc.c
