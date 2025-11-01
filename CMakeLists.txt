@@ -12,7 +12,7 @@ target_include_directories(gnuplotC
 
 target_compile_options(gnuplotC
     PRIVATE
-        -Wall -Werror -Wextra -O3
+        -Wall -Werror -Wextra
 )
 
 # Optional OMP support
