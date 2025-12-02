@@ -51,16 +51,16 @@ void draw_command(s_gnuplot *interface, const char *command);
 
 // 2D ELEMENTS:
 void draw_point_2d(s_gnuplot *interface, double x, double y, const char *config);
-void draw_2d(s_gnuplot *interface, double *x, double *y, int N, enum element_type type, const char *config); 
-void draw_array_2d(s_gnuplot *interface, double **coords, int N, enum element_type type, const char *config);
-void draw_arrows_from_array_2d(s_gnuplot *interface, double **coords, int N, int spacing, int offset, const char *config);  // Recall size command for head size (and fixed keyword), ex: size 0.2,20 fixed
-void draw_errorbars_2d(s_gnuplot *interface, double *x, double *mean, double *err, int N, const char *config);
+void draw_2d(s_gnuplot *interface, const double *x, const double *y, int N, enum element_type type, const char *config); 
+void draw_array_2d(s_gnuplot *interface, const double **coords, int N, enum element_type type, const char *config);
+void draw_arrows_from_array_2d(s_gnuplot *interface, const double **coords, int N, int spacing, int offset, const char *config);  // Recall size command for head size (and fixed keyword), ex: size 0.2,20 fixed
+void draw_errorbars_2d(s_gnuplot *interface, const double *x, const double *mean, const double *err, int N, const char *config);
 void draw_segment_2d(s_gnuplot *interface, double x0, double xf, double y0, double yf, const char *config);
 void draw_function_2d(s_gnuplot *interface, double x0, double xf, int N, double (*fun)(double), enum element_type type, const char *config);
 
 // 3D ELEMENTS:
 void draw_sphere_3d(s_gnuplot *interface, double x, double y, double z, double r, enum element_type type, const char *config);
-void draw_solid_triangle_3d(s_gnuplot *interface, double v0[3], double v1[3], double v2[3], const char *config);
+void draw_solid_triangle_3d(s_gnuplot *interface, const double v0[3], const double v1[3], const double v2[3], const char *config);
 
 
 

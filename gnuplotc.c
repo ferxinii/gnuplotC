@@ -592,7 +592,7 @@ void draw_point_2d(s_gnuplot *interface, double x, double y, const char *config)
 } 
 
 
-void draw_2d(s_gnuplot *interface, double *x, double *y, int N, enum element_type type, const char *config)
+void draw_2d(s_gnuplot *interface, const double *x, const double *y, int N, enum element_type type, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -610,7 +610,7 @@ void draw_2d(s_gnuplot *interface, double *x, double *y, int N, enum element_typ
 }
 
 
-void draw_array_2d(s_gnuplot *interface, double **coords, int N, enum element_type type, const char *config)
+void draw_array_2d(s_gnuplot *interface, const double **coords, int N, enum element_type type, const char *config)
 { 
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -628,7 +628,7 @@ void draw_array_2d(s_gnuplot *interface, double **coords, int N, enum element_ty
 }
 
 
-void draw_errorbars_2d(s_gnuplot *interface, double *x, double *mean, double *err, int N, const char *config)
+void draw_errorbars_2d(s_gnuplot *interface, const double *x, const double *mean, const double *err, int N, const char *config)
 {
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -645,7 +645,7 @@ void draw_errorbars_2d(s_gnuplot *interface, double *x, double *mean, double *er
 }
 
 
-void draw_arrows_from_array_2d(s_gnuplot *interface, double **coords, int N, int spacing, int offset, const char *config)
+void draw_arrows_from_array_2d(s_gnuplot *interface, const double **coords, int N, int spacing, int offset, const char *config)
 {   
     if (!guard_is2d(interface)) return;
     guard_active_plotting(interface);
@@ -704,7 +704,7 @@ void draw_sphere_3d(s_gnuplot *interface, double x, double y, double z, double r
 }
 
 
-void draw_solid_triangle_3d(s_gnuplot *interface, double v0[3], double v1[3], double v2[3], const char *config)
+void draw_solid_triangle_3d(s_gnuplot *interface, const double v0[3], const double v1[3], const double v2[3], const char *config)
 {
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);
@@ -717,7 +717,7 @@ void draw_solid_triangle_3d(s_gnuplot *interface, double v0[3], double v1[3], do
 }
 
 
-void draw_polytope_3d(s_gnuplot *interface, double **coords, int N, const char *config)
+void draw_polytope_3d(s_gnuplot *interface, const double **coords, int N, const char *config)
 {
     if (!guard_is3d(interface)) return;
     guard_active_plotting(interface);
