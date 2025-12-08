@@ -80,7 +80,7 @@ void draw_solid_triangle_3d(s_gnuplot *interface, const double v0[3], const doub
 #define gnuplot_start(obj, ...) \
         gnuplot_start_impl(obj, __VA_OPT__(__VA_ARGS__,) NULL)
 
-s_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...);
+s_gnuplot *gnuplot_start_impl(enum gnuplot_type type, const char *file_name, const int size[2], int font_size, ...);
 
 #define gnuplot_config(obj, ...) \
         gnuplot_config_impl(obj, __VA_OPT__(__VA_ARGS__,) NULL)

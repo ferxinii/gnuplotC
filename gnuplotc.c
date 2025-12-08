@@ -37,7 +37,7 @@ typedef struct flist {
 } s_flist;
 
 
-void parallel_frame_add(s_flist *flist) {
+static void parallel_frame_add(s_flist *flist) {
     s_frame *new_frame = malloc(sizeof(s_frame));
     new_frame->data = NULL;
     new_frame->size = 0;
@@ -55,7 +55,7 @@ void parallel_frame_add(s_flist *flist) {
 }
 
 
-void free_frame_memory(s_flist *flist) {
+static void free_frame_memory(s_flist *flist) {
     s_frame *current = flist->head;
     while (current) {
         s_frame *next = current->next; // store next before freeing
@@ -84,7 +84,7 @@ int GNUPLOTC_FRAMERATE = 24;
 int GNUPLOTC_PARAL_VIDEO_THREADS = 0;  
 
 
-void remove_directory(const char *path) 
+static void remove_directory(const char *path) 
 {
     DIR *dir = opendir(path);
     if (!dir) return;  // Directory does not exist
@@ -120,7 +120,7 @@ void remove_directory(const char *path)
 }
 
 
-FILE *popen_gnuplot(void)
+static FILE *popen_gnuplot(void)
 {
     FILE *pipe = popen("gnuplot -persistent 2>&1", "w");
     if (!pipe) {
@@ -131,7 +131,7 @@ FILE *popen_gnuplot(void)
 }
 
 
-void pipe_terminal_output(s_gnuplot *interface, const char *terminal, char *outfile)
+static void pipe_terminal_output(s_gnuplot *interface, const char *terminal, const char *outfile)
 {
     int NMAX = 1024;
     char buff[NMAX];
@@ -151,7 +151,7 @@ void pipe_terminal_output(s_gnuplot *interface, const char *terminal, char *outf
 }
 
 
-void pipe_command(s_gnuplot *interface, char *cmd)
+static void pipe_command(s_gnuplot *interface, const char *cmd)
 {   // Adds newline \n by default
     if (interface->state != 0) {
         puts("Error! Cannot execute command when plotting is active. Execute all commands before drawing any element.");
@@ -162,7 +162,7 @@ void pipe_command(s_gnuplot *interface, char *cmd)
 }
 
 
-void pipe_config_vargs(s_gnuplot *interface, va_list ap)
+static void pipe_config_vargs(s_gnuplot *interface, va_list ap)
 {   // Pipes configuration variable arguments which may be literal strings or an 
     // array of literal strings (NULL terminated, and marked with a sentinel 
     // GNUPLOTC_ARRAY_MARKER). These can be in any order and as many as needed, but 
@@ -191,7 +191,7 @@ void gnuplot_config_impl(s_gnuplot *interface, ...)
 }
 
 
-void pipe_default_commands(s_gnuplot *interface)
+static void pipe_default_commands(s_gnuplot *interface)
 {
     pipe_command(interface, "set parametric");
 }
@@ -214,7 +214,7 @@ void activate_parallel_video_processing(int num_threads)
 }
 
 
-void setup_video_output(s_gnuplot *interface)
+static void setup_video_output(s_gnuplot *interface)
 {
     if (GNUPLOTC_PARAL_VIDEO_THREADS == 0) {
         // We pipe each frame from gnuplot directly into ffmpeg as a png
@@ -243,7 +243,7 @@ void setup_video_output(s_gnuplot *interface)
 }
 
 
-s_gnuplot *gnuplot_start_impl(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...) 
+s_gnuplot *gnuplot_start_impl(enum gnuplot_type type, const char *file_name, const int size[2], int font_size, ...) 
 {
     s_gnuplot *interface = malloc(sizeof(s_gnuplot));
     interface->pipe = NULL;  // safeguard 
@@ -361,7 +361,7 @@ void next_frame_impl(s_gnuplot *interface, ...)
 
 
 
-void process_video_parallel(s_gnuplot *interface)
+static void process_video_parallel(s_gnuplot *interface)
 {   
     // Create array of pointers to frame for easy reference
     s_frame **farray = malloc(sizeof(s_frame*) * interface->frames.N);
@@ -445,7 +445,7 @@ void gnuplot_end(s_gnuplot *interface)
 }
 
 
-void video_to_gif(const char *file_video, const char *file_gif, int size[2], int framerate)
+void video_to_gif(const char *file_video, const char *file_gif, const int size[2], int framerate)
 {
       char command_mp4_to_gif[1024];
       snprintf(command_mp4_to_gif, 1024, "ffmpeg -loglevel error -i %s -vf \"fps=%d,scale=%d:%d:flags=lanczos\" -gifflags +transdiff -y %s 2>&1", file_video, framerate, size[0], size[1], file_gif);
@@ -453,7 +453,7 @@ void video_to_gif(const char *file_video, const char *file_gif, int size[2], int
 }
 
 
-int guard_is2d(s_gnuplot *interface)
+static int guard_is2d(s_gnuplot *interface)
 {
     if (interface->dim == 2) return 1;
     puts("Error: Cannot use 2d method!");
@@ -461,7 +461,7 @@ int guard_is2d(s_gnuplot *interface)
 }
 
 
-int guard_is3d(s_gnuplot *interface)
+static int guard_is3d(s_gnuplot *interface)
 {
     if (interface->dim == 3) return 1;
     puts("Error: Cannot use 3d method!");
@@ -469,7 +469,7 @@ int guard_is3d(s_gnuplot *interface)
 }
 
 
-void guard_active_plotting(s_gnuplot *interface)
+static void guard_active_plotting(s_gnuplot *interface)
 {
     if (interface->state == 0) {
         if (interface->dim == 2) {
@@ -513,13 +513,13 @@ void add_datablock_from_file(s_gnuplot *interface, const char *filename, int hea
 }
 
 
-int config_specifies_title(const char *config)
+static int config_specifies_title(const char *config)
 {
     return strstr(config, "title") != NULL || strstr(config, "notitle") != NULL;
 }
 
 
-void pipe_element_type(s_gnuplot *interface, enum element_type type)
+static void pipe_element_type(s_gnuplot *interface, enum element_type type)
 {
     fprintf(interface->pipe, " w ");
     switch (type) {
@@ -545,7 +545,7 @@ void pipe_element_type(s_gnuplot *interface, enum element_type type)
     }
 }
 
-void pipe_element_config(s_gnuplot *interface, const char *config)
+static void pipe_element_config(s_gnuplot *interface, const char *config)
 {
     if (!config) {
         fprintf(interface->pipe, " notitle");
