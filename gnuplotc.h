@@ -33,7 +33,7 @@ enum element_type {
 extern int GNUPLOTC_FRAMERATE;
 
 // BASIC
-s_gnuplot *gnuplot_start(enum gnuplot_type type, char *file_name, int size[2], int font_size, ...);
+s_gnuplot *gnuplot_start(enum gnuplot_type type, const char *file_name, const int size[2], int font_size, ...);
 void gnuplot_config(s_gnuplot *interface, ...);
 void gnuplot_end(s_gnuplot *interface);
 void next_subplot(s_gnuplot *interface);
@@ -41,7 +41,7 @@ void next_subplot(s_gnuplot *interface);
 // VIDEO
 void activate_parallel_video_processing(int num_threads);
 void next_frame(s_gnuplot *interface, ...); 
-void video_to_gif(const char *file_video, const char *file_gif, int size[2], int framerate);
+void video_to_gif(const char *file_video, const char *file_gif, const int size[2], int framerate);
 
 // GENERIC ELEMENTS
 void add_datablock_from_file(s_gnuplot *interface, const char *filename, int header_lines_skip, const char *datablock_name);
